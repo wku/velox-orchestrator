@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site 2 - Products</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; background: #fefce8; }
+        h1 { color: #ca8a04; margin-bottom: 20px; }
+        .card { background: white; padding: 20px; border-radius: 8px; margin: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .product { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #e5e7eb; }
+        .product:last-child { border-bottom: none; }
+        .price { color: #16a34a; font-weight: 600; }
+        button { background: #ca8a04; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #a16207; }
+        .info { font-size: 12px; color: #6b7280; margin-top: 10px; font-family: monospace; }
+        #products { margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <h1>Site 2 - Products Catalog</h1>
+    <div class="card">
+        <h3>Products</h3>
+        <button onclick="loadProducts()">Refresh</button>
+        <div id="products"><p style="color:#6b7280;padding:12px;">Loading...</p></div>
+        <div class="info" id="api-url"></div>
+    </div>
+    <script>
+        const API_BASE = (function() {
+            const h = location.hostname;
+            const m = h.match(/\.(\d+\.\d+\.\d+\.\d+)\.(nip\.io|sslip\.io)$/);
+            if (m) return location.protocol + '//api.' + m[1] + '.' + m[2];
+            const d = h.match(/\.(\d+-\d+-\d+-\d+)\.(sslip\.io)$/);
+            if (d) return location.protocol + '//api.' + d[1] + '.' + d[2];
+            if (h.endsWith('.lvh.me')) return location.protocol + '//api.lvh.me';
+            return location.protocol + '//api.' + h.split('.').slice(1).join('.');
+        })();
+        document.getElementById('api-url').textContent = 'API: ' + API_BASE;
+        
+        async function loadProducts() {
+            try {
+                const r = await fetch(API_BASE + '/products');
+                const products = await r.json();
+                document.getElementById('products').innerHTML = products.map(p => 
+                    '<div class="product"><span>' + p.name + '</span><span class="price">EUR ' + p.price.toFixed(2) + '</span></div>'
+                ).join('');
+            } catch(e) {
+                document.getElementById('products').innerHTML = '<div class="product">Error: ' + e.message + '</div>';
+            }
+        }
+        
+        loadProducts();
+    </script>
+</body>
+</html>

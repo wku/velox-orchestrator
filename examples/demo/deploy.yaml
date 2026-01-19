@@ -1,0 +1,19 @@
+name: demo
+id: demo
+
+env:
+  APP_VERSION: "1.0.0"
+
+services:
+  api:
+    domain: api.127.0.0.1.nip.io
+    port: 8080
+    replicas: 1
+
+  site1:
+    domain: site1.127.0.0.1.nip.io
+    port: 80
+
+  site2:
+    domain: site2.127.0.0.1.nip.io
+    port: 80

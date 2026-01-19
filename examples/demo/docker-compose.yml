@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  api:
+    build: ./demo-api
+    image: vo/demo-api:latest
+    environment:
+      PORT: "8080"
+      TZ: Europe/Helsinki
+    healthcheck:
+      test: [ "CMD", "wget", "-S", "-O", "/dev/null", "http://localhost:8080/health" ]
+      interval: 5s
+      start_period: 10s
+      timeout: 3s
+
+  site1:
+    build: ./demo-site1
+    image: vo/demo-site1:latest
+    depends_on:
+      - api
+    environment:
+      TZ: Europe/Helsinki
+
+  site2:
+    build: ./demo-site2
+    image: vo/demo-site2:latest
+    depends_on:
+      - api
+    environment:
+      TZ: Europe/Helsinki

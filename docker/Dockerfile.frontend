@@ -1,0 +1,14 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY front/package*.json ./
+RUN npm install
+
+COPY front/ .
+
+ENV HOST=0.0.0.0
+# If using Vite proxy, we might need to adjust vite.config.js or rely on internal network
+# But for now, let's expose 5173
+
+CMD ["npm", "run", "dev", "--", "--host"]

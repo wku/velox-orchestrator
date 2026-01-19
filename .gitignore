@@ -1,0 +1,58 @@
+# Dependencies
+node_modules
+
+# SvelteKit build output
+.svelte-kit
+build
+/package
+
+# Vercel/Netlify/Cloudflare outputs
+.output
+.vercel
+.netlify
+.wrangler
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Env files
+.env
+.env.*
+!.env.example
+!.env.test
+
+# Vite
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing
+/tests-results
+/test-results
+/playwright-report
+/blob-report
+/test-results
+/coverage
+
+# IDEs
+.idea
+.vscode
+*.sublime-project
+*.sublime-workspace
+
+# Common build artifacts
+dist

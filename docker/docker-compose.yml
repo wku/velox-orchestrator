@@ -1,0 +1,131 @@
+services:
+  control-plane:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.control
+    container_name: vo-control
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - DATABASE_URL=postgresql+asyncpg://vo:Bz5r1bizzx4oChKZXZ6XU1@postgres/vo
+      - ROOT_DOMAIN=${ROOT_DOMAIN:-127.0.0.1.nip.io}
+      - ACME_EMAIL=${ACME_EMAIL:-admin@vo.dev}
+      - ACME_STAGING=${ACME_STAGING:-true}
+      - LOG_LEVEL=${LOG_LEVEL:-DEBUG}
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - PROXY_NETWORK=vo-proxy
+      - DEPLOY_PATH=/app/deployments
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - certs:/app/certs
+      - deployments:/app/deployments
+      - /home/wku/WKU/new_src/korysnyk/GIT/velox-orchestrator:/home/wku/WKU/new_src/korysnyk/GIT/velox-orchestrator:ro #for local
+    ports:
+      - "8000:8000"
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - vo-internal
+      - vo-proxy
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.frontend
+    container_name: vo-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - PUBLIC_API_URL=http://sys-api.${ROOT_DOMAIN:-127.0.0.1.nip.io}
+    depends_on:
+      control-plane:
+        condition: service_started
+    networks:
+      - vo-proxy
+    volumes:
+      - ../front:/app
+      - /app/node_modules
+    restart: unless-stopped
+
+  openresty:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.openresty
+    container_name: vo-proxy
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certs:/etc/nginx/certs:ro
+    depends_on:
+      redis:
+        condition: service_healthy
+      control-plane:
+        condition: service_started
+    networks:
+      - vo-internal
+      - vo-proxy
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: vo-postgres
+    environment:
+      POSTGRES_USER: vo
+      POSTGRES_PASSWORD: Bz5r1bizzx4oChKZXZ6XU1
+      POSTGRES_DB: vo
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - vo-internal
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U vo -d vo" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: vo-redis
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+    networks:
+      - vo-internal
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+networks:
+  vo-internal:
+    name: vo-internal
+    internal: true
+  vo-proxy:
+    name: vo-proxy
+    driver: bridge
+
+volumes:
+  certs:
+    name: vo-certs
+  redis-data:
+    name: vo-redis-data
+  postgres-data:
+    name: vo-postgres-data
+  deployments:
+    name: vo-deployments

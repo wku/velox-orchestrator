@@ -1,0 +1,17 @@
+FROM openresty/openresty:1.25.3.1-alpine
+
+RUN apk add --no-cache openssl
+
+RUN mkdir -p /etc/nginx/certs /etc/nginx/lua
+
+RUN openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout /etc/nginx/certs/default.key \
+    -out /etc/nginx/certs/default.crt \
+    -subj "/CN=localhost"
+
+COPY openresty/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY openresty/lua/ /etc/nginx/lua/
+
+EXPOSE 80 443
+
+CMD ["openresty", "-g", "daemon off;"]

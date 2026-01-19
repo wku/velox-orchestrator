@@ -1,0 +1,15 @@
+litestar[standard]
+uvicorn
+redis
+aiodocker
+PyYAML
+httpx
+cryptography
+msgspec
+jinja2
+python-multipart
+# System stats
+psutil
+sqlalchemy[asyncio]
+asyncpg
+greenlet
